@@ -1,8 +1,11 @@
 # PUT
+import pytest
+
 from src.models.product_request_model import ProductRequestModel
 from src.models.product_model import ProductModel
 
 
+@pytest.mark.smoke
 def test_update_product(products_client):
     product = ProductRequestModel(
         title="Updated Product",

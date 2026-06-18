@@ -1,8 +1,11 @@
 # POST
+import pytest
+
 from src.models.product_request_model import ProductRequestModel
 from src.models.product_create_response_model import ProductCreateResponseModel
 
 
+@pytest.mark.smoke
 def test_create_product(products_client):
     product = ProductRequestModel(
         title="Test Product",

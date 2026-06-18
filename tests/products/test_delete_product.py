@@ -1,7 +1,9 @@
 # DELETE
+import pytest
+
 from src.models.product_delete_response_model import ProductDeleteResponseModel
 
-
+@pytest.mark.smoke
 def test_delete_product(products_client):
     response = products_client.delete_product(1)
 
