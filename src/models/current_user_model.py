@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class AuthModel(BaseModel):
+class CurrentUserModel(BaseModel):
     id: int
     username: str
     email: str
