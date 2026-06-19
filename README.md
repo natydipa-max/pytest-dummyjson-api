@@ -6,7 +6,7 @@
 
 API test automation framework built with Python and Pytest, targeting the [DummyJSON](https://dummyjson.com) public API.
 
-The framework covers full CRUD operations on the `/products` endpoint with schema validation via Pydantic and a CI/CD pipeline running on GitHub Actions.
+The framework covers `authentication workflows and CRUD operations on the `/products` endpoint, using Pydantic for schema validation and GitHub Actions for CI execution.
 
 ---
 
@@ -29,20 +29,26 @@ pytest-dummyjson-api/
 ├── src/
 │   ├── client/
 │   │   ├── base_client.py       # HTTP session, shared methods
-│   │   └── product_client.py    # Products endpoint abstraction
+│   │   ├── product_client.py    # Products endpoint abstraction
+│   │   └── auth_client.py       # Authentication endpoint client
 │   └── models/
 │       ├── product_model.py                  # GET response schema
 │       ├── product_request_model.py          # POST/PUT request body
 │       ├── product_create_response_model.py  # POST response schema
 │       ├── product_delete_response_model.py  # DELETE response schema
-│       └── error_response_model.py           # 4xx error response schema
+│       ├── error_response_model.py           # 4xx error response schema
+│       ├── login_response_model.py           # Login response schema
+│       └── current_user_model.py             # Authenticated user schema
 ├── tests/
-│   └── products/
-│       ├── test_get_products.py
-│       ├── test_create_product.py
-│       ├── test_update_product.py
-│       ├── test_delete_product.py
-│       └── test_negative_products.py
+│   ├── products/
+│   │   ├── test_get_products.py
+│   │   ├── test_create_product.py
+│   │   ├── test_update_product.py
+│   │   ├── test_delete_product.py
+│   │   └── test_negative_products.py
+│   └── auth/
+│       ├── test_auth.py
+│       └── test_current_user.py
 ├── docs/
 │   └── testing_strategy.md
 ├── conftest.py
@@ -52,7 +58,26 @@ pytest-dummyjson-api/
 
 ---
 
+## Authentication
+
+Authenticated endpoint tests use a reusable session-scoped `auth_token` fixture.
+
+The fixture performs login once per test session and provides a valid access token for protected endpoint testing.
+
+---
+
 ## API Coverage
+
+### Authentication
+
+| Method | Endpoint | Test | Type |
+|----------|----------|----------|----------|
+| POST | /auth/login | test_login_with_valid_credentials | smoke |
+| POST | /auth/login | test_login_with_invalid_username | negative |
+| POST | /auth/login | test_login_with_invalid_password | negative |
+| POST | /auth/login | test_login_with_empty_credentials | negative |
+| GET | /auth/me | test_get_current_user | smoke |
+| GET | /auth/me | test_get_current_user_with_invalid_token | negative |
 
 ### Products Endpoint
 
@@ -84,6 +109,8 @@ Each HTTP operation has its own Pydantic model to reflect the actual response co
 - `ProductCreateResponseModel` — object returned by POST
 - `ProductDeleteResponseModel` — object returned by DELETE, includes `isDeleted` and `deletedOn`
 - `ErrorResponseModel` — error object returned by 4xx responses
+- `LoginResponseModel` — response returned by /auth/login
+- `CurrentUserModel` — authenticated user returned by /auth/me
 
 ---
 
@@ -108,6 +135,21 @@ pytest --tb=short -v
 ---
 
 ## Exploratory Findings
+
+#### Authentication Security Observation: GET /auth/me
+
+The authenticated user endpoint returns sensitive user information, including the user's password.
+
+Example fields returned:
+
+```json
+{
+  "username": "emilys",
+  "password": "emilyspass"
+}
+```
+
+This behavior is acceptable for a public demo API but would be considered a security issue in a production environment, where password fields should never be returned in API responses.
 
 ### GET /products
 
