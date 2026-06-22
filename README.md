@@ -1,6 +1,6 @@
 # Pytest DummyJSON API Framework
 
-![Smoke Tests](https://github.com/natydipa-max/pytest-dummyjson-api/actions/workflows/test.yml/badge.svg)
+[![Smoke Tests](https://github.com/natydipa-max/pytest-dummyjson-api/actions/workflows/test.yml/badge.svg)](https://github.com/natydipa-max/pytest-dummyjson-api/actions/workflows/test.yml)
 
 ## Overview
 

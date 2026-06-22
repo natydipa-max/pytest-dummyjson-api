@@ -1,4 +1,5 @@
 from src.config import AUTH_USERNAME
+from src.constants import INVALID_TOKEN_MESSAGE
 from src.models.current_user_model import CurrentUserModel
 
 
@@ -19,4 +20,4 @@ def test_get_current_user_with_invalid_token(auth_client):
 
     assert response.status_code == 401
 
-    assert response.json()["message"] == "Invalid/Expired Token!"
+    assert response.json()["message"] ==  INVALID_TOKEN_MESSAGE
