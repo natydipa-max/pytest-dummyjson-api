@@ -12,10 +12,11 @@ class BaseClient:
             "User-Agent": "Mozilla/5.0"
         })
 
-    def get(self, endpoint: str):
+    def get(self, endpoint: str, **kwargs):
         return self.session.get(
             f"{self.base_url}{endpoint}",
             timeout=DEFAULT_TIMEOUT,
+            **kwargs,
         )
 
     def post(self, endpoint: str, **kwargs):
@@ -32,16 +33,22 @@ class BaseClient:
             **kwargs,
         )
 
-    def delete(self, endpoint: str):
+    def delete(self, endpoint: str, **kwargs):
         return self.session.delete(
             f"{self.base_url}{endpoint}",
             timeout=DEFAULT_TIMEOUT,
+            **kwargs,
         )
 
-    def send_raw(self, method: str, endpoint: str, raw_body: str):
+    def send_raw(self, method: str, endpoint: str, raw_body: str, **kwargs):
+        headers = {"Content-Type": "application/json"}
+        headers.update(kwargs.pop("headers", {}))
+
         return self.session.request(
             method=method,
             url=f"{self.base_url}{endpoint}",
             data=raw_body,
-            headers={"Content-Type": "application/json"},
+            headers=headers,
+            timeout=DEFAULT_TIMEOUT,
+            **kwargs,
         )

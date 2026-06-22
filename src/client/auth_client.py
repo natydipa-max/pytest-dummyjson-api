@@ -10,7 +10,7 @@ class AuthClient(BaseClient):
         )
 
     def get_current_user(self, token: str):
-        return self.session.get(
-            f"{self.base_url}/auth/me",
+        return self.get(
+            "/auth/me",
             headers={"Authorization": f"Bearer {token}"},
         )

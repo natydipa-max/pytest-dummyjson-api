@@ -6,7 +6,7 @@
 
 API test automation framework built with Python and Pytest, targeting the [DummyJSON](https://dummyjson.com) public API.
 
-The framework covers `authentication workflows and CRUD operations on the `/products` endpoint, using Pydantic for schema validation and GitHub Actions for CI execution.
+The framework covers authentication workflows and CRUD operations on the `/products` endpoint, using Pydantic for schema validation and GitHub Actions for CI execution.
 
 ---
 
@@ -23,6 +23,8 @@ The framework covers `authentication workflows and CRUD operations on the `/prod
 ## Architecture
 
 The framework is organized in layers:
+
+HTTP clients share a common base client that centralizes session configuration, default headers, and request timeouts.
 
 ```
 pytest-dummyjson-api/
@@ -105,9 +107,9 @@ All tests follow a consistent three-step approach:
 
 Each HTTP operation has its own Pydantic model to reflect the actual response contract:
 
-- `ProductModel` — full product object returned by GET
+- `ProductModel` — key product fields returned by GET
 - `ProductCreateResponseModel` — object returned by POST
-- `ProductDeleteResponseModel` — object returned by DELETE, includes `isDeleted` and `deletedOn`
+- `ProductDeleteResponseModel` — object returned by DELETE, validates `isDeleted` and parses `deletedOn` as a timestamp
 - `ErrorResponseModel` — error object returned by 4xx responses
 - `LoginResponseModel` — response returned by /auth/login
 - `CurrentUserModel` — authenticated user returned by /auth/me
@@ -131,6 +133,15 @@ pytest -m smoke --tb=short -v
 # Trigger full suite locally
 pytest --tb=short -v
 ```
+
+---
+
+## Design Choices
+
+- Reusable API clients keep endpoint logic separate from test assertions.
+- Pydantic models validate response contracts while keeping tests readable.
+- Smoke tests provide a fast signal before running the full suite in CI.
+- Request timeouts are centralized to avoid hanging test runs.
 
 ---
 
@@ -200,6 +211,10 @@ Not all products include a `brand` field. The `ProductModel` defines it as optio
 ## Running the Tests
 
 ```bash
+# Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
 # Install dependencies
 pip install -r requirements.txt
 
