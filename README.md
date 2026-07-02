@@ -6,7 +6,7 @@
 
 API test automation framework built with Python and Pytest, targeting the [DummyJSON](https://dummyjson.com) public API.
 
-The framework covers authentication workflows and CRUD operations on the `/products` endpoint, using Pydantic for schema validation and GitHub Actions for CI execution.
+The framework covers authentication workflows, CRUD operations for the `/products` endpoint, and retrieval and search operations for the `/users` endpoint, using Pydantic for response schema validation and GitHub Actions for continuous integration.
 
 ---
 
@@ -32,12 +32,16 @@ pytest-dummyjson-api/
 │   ├── client/
 │   │   ├── base_client.py       # HTTP session, shared methods
 │   │   ├── product_client.py    # Products endpoint abstraction
+│   │   ├── user_client.py       # Users endpoint abstraction
 │   │   └── auth_client.py       # Authentication endpoint client
 │   └── models/
 │       ├── product_model.py                  # GET response schema
 │       ├── product_request_model.py          # POST/PUT request body
 │       ├── product_create_response_model.py  # POST response schema
 │       ├── product_delete_response_model.py  # DELETE response schema
+│       ├── product_response_model.py         # GET list response schema
+│       ├── user_model.py                     # GET response schema
+│       ├── user_response_model.py            # GET list response schema
 │       ├── error_response_model.py           # 4xx error response schema
 │       ├── login_response_model.py           # Login response schema
 │       └── current_user_model.py             # Authenticated user schema
@@ -48,6 +52,10 @@ pytest-dummyjson-api/
 │   │   ├── test_update_product.py
 │   │   ├── test_delete_product.py
 │   │   └── test_negative_products.py
+│   ├── users/
+│   │   ├── test_get_users.py
+│   │   ├── test_negative_users.py
+│   │   ├── test_search_users.py
 │   └── auth/
 │       ├── test_auth.py
 │       └── test_current_user.py
@@ -95,6 +103,17 @@ The fixture performs login once per test session and provides a valid access tok
 | DELETE | /products/{id} | test_delete_product | smoke |
 | DELETE | /products/{id} | test_delete_product_with_nonexistent_id_returns_404 | negative |
 
+
+### Users Endpoint
+
+| Method | Endpoint | Test | Type |
+|--------|----------|------|------|
+| GET | /users | test_get_all_users | smoke |
+| GET | /users/{id} | test_get_user_by_id | smoke |
+| GET | /users/search | test_search_users_by_first_name | smoke |
+| GET | /users/search | test_search_users_positive | positive |
+| GET | /users/search | test_search_users_returns_empty_list_when_no_matches | negative |
+| GET | /users/{id} | test_get_user_with_invalid_id | negative |
 ---
 
 ## Validation Strategy
@@ -105,14 +124,17 @@ All tests follow a consistent three-step approach:
 2. **Schema** — validate the response body using Pydantic models
 3. **Business rules** — assert endpoint-specific behavior
 
-Each HTTP operation has its own Pydantic model to reflect the actual response contract:
+Response contracts are validated using dedicated Pydantic models that represent each API resource or response type.
 
-- `ProductModel` — key product fields returned by GET
-- `ProductCreateResponseModel` — object returned by POST
-- `ProductDeleteResponseModel` — object returned by DELETE, validates `isDeleted` and parses `deletedOn` as a timestamp
-- `ErrorResponseModel` — error object returned by 4xx responses
-- `LoginResponseModel` — response returned by /auth/login
-- `CurrentUserModel` — authenticated user returned by /auth/me
+- `ProductModel` — individual product returned by GET endpoints
+- `ProductsResponseModel` — paginated response returned by `GET /products`
+- `ProductCreateResponseModel` — response returned by `POST /products/add`
+- `ProductDeleteResponseModel` — response returned by `DELETE /products/{id}`, including `isDeleted` and `deletedOn`
+- `UserModel` — individual user returned by GET endpoints
+- `UsersResponseModel` — paginated response returned by `GET /users` and `GET /users/search`
+- `LoginResponseModel` — response returned by `POST /auth/login`
+- `CurrentUserModel` — authenticated user returned by `GET /auth/me`
+- `ErrorResponseModel` — error response returned by 4xx endpoints
 
 ---
 
@@ -138,10 +160,10 @@ pytest --tb=short -v
 
 ## Design Choices
 
-- Reusable API clients keep endpoint logic separate from test assertions.
-- Pydantic models validate response contracts while keeping tests readable.
-- Smoke tests provide a fast signal before running the full suite in CI.
-- Request timeouts are centralized to avoid hanging test runs.
+- Reusable API clients encapsulate endpoint communication and keep HTTP logic separate from test assertions.
+- Response contracts are validated with Pydantic models to improve readability and maintainability.
+- Smoke tests provide a fast feedback loop before running the full test suite in CI.
+- Request timeouts are centralized in the base client to prevent hanging test executions.
 
 ---
 
@@ -205,6 +227,18 @@ Returns `204 No Content` with allowed methods only. No schema or field validatio
 ### brand field
 
 Not all products include a `brand` field. The `ProductModel` defines it as optional (`brand: str | None = None`) to avoid schema validation failures on products without brand.
+
+### GET /users/search
+
+The endpoint supports search through the `q` query parameter.
+
+Example:
+
+```text
+GET /users/search?q=Noah
+```
+
+The response follows the same paginated structure as `GET /users`, returning a `users` array together with `total`, `skip`, and `limit`.
 
 ---
 

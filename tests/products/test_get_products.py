@@ -1,6 +1,7 @@
 # GET
 import pytest
 from src.models.product_model import ProductModel
+from src.models.products_response_model import ProductsResponseModel
 
 
 @pytest.mark.smoke
@@ -20,9 +21,6 @@ def test_get_all_products(products_client):
 
     assert response.status_code == 200
 
-    products = [
-        ProductModel.model_validate(p)
-        for p in response.json()["products"]
-    ]
+    products = ProductsResponseModel.model_validate(response.json())
 
-    assert all(product.id > 0 for product in products)
+    assert all(product.id > 0 for product in products.products)
