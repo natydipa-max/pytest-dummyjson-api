@@ -35,16 +35,21 @@ pytest-dummyjson-api/
 │   │   ├── user_client.py       # Users endpoint abstraction
 │   │   └── auth_client.py       # Authentication endpoint client
 │   └── models/
-│       ├── product_model.py                  # GET response schema
-│       ├── product_request_model.py          # POST/PUT request body
-│       ├── product_create_response_model.py  # POST response schema
-│       ├── product_delete_response_model.py  # DELETE response schema
-│       ├── product_response_model.py         # GET list response schema
-│       ├── user_model.py                     # GET response schema
-│       ├── user_response_model.py            # GET list response schema
-│       ├── error_response_model.py           # 4xx error response schema
-│       ├── login_response_model.py           # Login response schema
-│       └── current_user_model.py             # Authenticated user schema
+│       ├── products/
+│       │       ├── product_model.py                  # GET response schema
+│       │       ├── product_request_model.py          # POST/PUT request body
+│       │       ├── product_create_response_model.py  # POST response schema
+│       │       ├── product_delete_response_model.py  # DELETE response schema
+│       │       └── product_response_model.py         # GET list response schema
+│       ├── users/
+│       │       ├── user_model.py                     # GET response schema
+│       │       ├── user_response_model.py            # GET list response schema
+│       │       ├── user_create_response_model.py     # POST response schema
+│       │       ├── user_request_model.py             # POST/PUT request body
+│       │       └── current_user_model.py             # Authenticated user schema
+│       ├── auth/
+│       │       └── login_response_model.py           # Login response schema
+│       └── error_response_model.py           # 4xx error response schema
 ├── tests/
 │   ├── products/
 │   │   ├── test_get_products.py
@@ -56,6 +61,7 @@ pytest-dummyjson-api/
 │   │   ├── test_get_users.py
 │   │   ├── test_negative_users.py
 │   │   ├── test_search_users.py
+│   │   └── test_create_user.py
 │   └── auth/
 │       ├── test_auth.py
 │       └── test_current_user.py
@@ -124,14 +130,17 @@ All tests follow a consistent three-step approach:
 2. **Schema** — validate the response body using Pydantic models
 3. **Business rules** — assert endpoint-specific behavior
 
-Response contracts are validated using dedicated Pydantic models that represent each API resource or response type.
+Response contracts are validated using dedicated Pydantic models organized by domain (`auth`, `products`, and `users`). Each model represents a specific API resource, request payload, or response type.
 
 - `ProductModel` — individual product returned by GET endpoints
 - `ProductsResponseModel` — paginated response returned by `GET /products`
+- `ProductRequestModel` — request payload used by `POST /products/add` and `PUT /products/{id}`
 - `ProductCreateResponseModel` — response returned by `POST /products/add`
 - `ProductDeleteResponseModel` — response returned by `DELETE /products/{id}`, including `isDeleted` and `deletedOn`
 - `UserModel` — individual user returned by GET endpoints
 - `UsersResponseModel` — paginated response returned by `GET /users` and `GET /users/search`
+- `UserRequestModel` — request payload used by `POST /users/add`
+- `UserCreateResponseModel` — response returned by `POST /users/add`
 - `LoginResponseModel` — response returned by `POST /auth/login`
 - `CurrentUserModel` — authenticated user returned by `GET /auth/me`
 - `ErrorResponseModel` — error response returned by 4xx endpoints
@@ -230,7 +239,7 @@ Not all products include a `brand` field. The `ProductModel` defines it as optio
 
 ### GET /users/search
 
-The endpoint supports search through the `q` query parameter.
+The endpoint supports searching through the `q` query parameter.
 
 Example:
 
@@ -239,6 +248,37 @@ GET /users/search?q=Noah
 ```
 
 The response follows the same paginated structure as `GET /users`, returning a `users` array together with `total`, `skip`, and `limit`.
+
+#### Observed search behavior
+
+Based on exploratory testing with `curl` requests:
+
+- ✅ Performs partial (substring) matching on `firstName`.
+- ✅ Performs partial (substring) matching on `lastName`.
+- ✅ Supports searching by `username`.
+- ❌ Does not search by `email`.
+- ❌ Does not search by `maidenName`.
+
+Examples:
+
+```bash
+# Partial match on firstName
+curl "https://dummyjson.com/users/search?q=na"
+
+# Match by lastName
+curl "https://dummyjson.com/users/search?q=Hernandez"
+
+# Match by username
+curl "https://dummyjson.com/users/search?q=noahh"
+
+# No results when searching by email
+curl "https://dummyjson.com/users/search?q=@dummyjson.com"
+
+# No results when searching by maidenName
+curl "https://dummyjson.com/users/search?q=Morgan"
+```
+
+> **Note:** These behaviors were verified through exploratory testing and reflect the current implementation of the DummyJSON API.
 
 ---
 

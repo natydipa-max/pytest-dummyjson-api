@@ -19,4 +19,4 @@ def test_get_user_with_invalid_id(users_client, user_id, expected_status):
         response.json()
     )
 
-    assert error.message
+    assert str(user_id) in error.message

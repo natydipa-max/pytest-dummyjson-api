@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 
 
-class ProductCreateResponseModel(BaseModel):
+class UserCreateResponseModel(BaseModel):
     id: int
-    title: str
-    price: float
-    description: str
-    category: str
+    firstName: str
+    lastName: str
+    age: int

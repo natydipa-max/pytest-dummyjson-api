@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from src.models.user_model import UserModel
+from src.models.users.user_model import UserModel
 
 
 class UsersResponseModel(BaseModel):
