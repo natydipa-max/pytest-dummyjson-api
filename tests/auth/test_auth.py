@@ -1,5 +1,5 @@
 from src.constants import INVALID_CREDENTIALS_MESSAGE, REQUIRED_CREDENTIALS_MESSAGE
-from src.models.login_response_model import LoginResponseModel
+from src.models.auth.login_response_model import LoginResponseModel
 from src.models.error_response_model import ErrorResponseModel
 from src.config import AUTH_USERNAME, AUTH_PASSWORD
 

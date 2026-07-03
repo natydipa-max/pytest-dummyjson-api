@@ -1,6 +1,6 @@
 from src.config import AUTH_USERNAME
 from src.constants import INVALID_TOKEN_MESSAGE
-from src.models.current_user_model import CurrentUserModel
+from src.models.users.current_user_model import CurrentUserModel
 
 
 def test_get_current_user(auth_client, auth_token):
