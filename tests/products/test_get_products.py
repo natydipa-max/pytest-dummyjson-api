@@ -1,7 +1,7 @@
 # GET
 import pytest
-from src.models.product_model import ProductModel
-from src.models.products_response_model import ProductsResponseModel
+from src.models.products.product_model import ProductModel
+from src.models.products.products_response_model import ProductsResponseModel
 
 
 @pytest.mark.smoke
@@ -24,3 +24,5 @@ def test_get_all_products(products_client):
     products = ProductsResponseModel.model_validate(response.json())
 
     assert all(product.id > 0 for product in products.products)
+    assert products.total == 194
+    assert products.limit == 30

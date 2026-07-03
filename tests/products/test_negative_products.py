@@ -1,6 +1,6 @@
 # Negative tests
 from src.models.error_response_model import ErrorResponseModel
-from src.models.product_request_model import ProductRequestModel
+from src.models.products.product_request_model import ProductRequestModel
 import pytest
 
 @pytest.mark.parametrize(
@@ -21,7 +21,7 @@ def test_get_product_with_invalid_id(products_client, product_id, expected_statu
         response.json()
     )
 
-    assert error.message
+    assert str(product_id) in error.message
 
 def test_update_product_with_nonexistent_id_returns_404(products_client):
     product = ProductRequestModel(

@@ -1,5 +1,5 @@
 from src.client.base_client import BaseClient
-from src.models.product_request_model import ProductRequestModel
+from src.models.products.product_request_model import ProductRequestModel
 
 
 class ProductClient(BaseClient):

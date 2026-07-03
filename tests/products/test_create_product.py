@@ -1,8 +1,8 @@
 # POST
 import pytest
 
-from src.models.product_request_model import ProductRequestModel
-from src.models.product_create_response_model import ProductCreateResponseModel
+from src.models.products.product_request_model import ProductRequestModel
+from src.models.products.product_create_response_model import ProductCreateResponseModel
 
 
 @pytest.mark.smoke

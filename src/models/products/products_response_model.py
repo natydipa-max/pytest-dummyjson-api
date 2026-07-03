@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from src.models.product_model import ProductModel
+from src.models.products.product_model import ProductModel
 
 
 class ProductsResponseModel(BaseModel):

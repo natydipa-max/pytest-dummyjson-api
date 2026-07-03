@@ -1,8 +1,8 @@
 # PUT
 import pytest
 
-from src.models.product_request_model import ProductRequestModel
-from src.models.product_model import ProductModel
+from src.models.products.product_request_model import ProductRequestModel
+from src.models.products.product_model import ProductModel
 
 
 @pytest.mark.smoke
