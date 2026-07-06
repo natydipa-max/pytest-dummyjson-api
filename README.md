@@ -97,29 +97,33 @@ The fixture performs login once per test session and provides a valid access tok
 
 ### Products Endpoint
 
-| Method | Endpoint | Test | Type |
-|--------|----------|------|------|
-| GET | /products | test_get_all_products | smoke |
-| GET | /products/{id} | test_get_product_by_id | smoke |
-| GET | /products/{id} | test_get_product_with_nonexistent_id_returns_404 | negative |
-| GET | /products/{id} | test_get_product_with_non_numeric_id_returns_404 | negative |
-| POST | /products/add | test_create_product | smoke |
-| PUT | /products/{id} | test_update_product | smoke |
+| Method | Endpoint | Test | Type     |
+|--------|----------|------|----------|
+| GET | /products | test_get_all_products | smoke    |
+| GET | /products/{id} | test_get_product_by_id | smoke    |
+| GET | /products/{id} | test_get_product_with_invalid_id | negative |
+| POST | /products/add | test_create_product | smoke    |
+| POST | /products/add | test_create_product_with_malformed_json_returns_400 | negative |
+| PUT | /products/{id} | test_update_product | smoke    |
 | PUT | /products/{id} | test_update_product_with_nonexistent_id_returns_404 | negative |
-| DELETE | /products/{id} | test_delete_product | smoke |
+| DELETE | /products/{id} | test_delete_product | smoke    |
 | DELETE | /products/{id} | test_delete_product_with_nonexistent_id_returns_404 | negative |
 
 
 ### Users Endpoint
 
-| Method | Endpoint | Test | Type |
-|--------|----------|------|------|
-| GET | /users | test_get_all_users | smoke |
-| GET | /users/{id} | test_get_user_by_id | smoke |
-| GET | /users/search | test_search_users_by_first_name | smoke |
-| GET | /users/search | test_search_users_positive | positive |
-| GET | /users/search | test_search_users_returns_empty_list_when_no_matches | negative |
-| GET | /users/{id} | test_get_user_with_invalid_id | negative |
+| Method | Endpoint      | Test | Type     |
+|--------|---------------|------|----------|
+| GET    | /users        | test_get_all_users | smoke    |
+| GET    | /users/{id}   | test_get_user_by_id | smoke    |
+| GET    | /users/{id}   | test_get_user_with_invalid_id | negative |
+| POST   | /users/add    | test_create_user | smoke    |
+| POST   | /users/add    | test_create_user | smoke    |
+| POST   | /users/add    | test_create_user_with_malformed_json_returns_400 | negative |
+| GET    | /users/search | test_search_users | smoke    |
+| GET    | /users/search | test_search_users_positive | positive |
+| GET    | /users/search | test_search_users_returns_empty_list_when_no_matches | negative |
+
 ---
 
 ## Validation Strategy
@@ -193,6 +197,26 @@ Example fields returned:
 
 This behavior is acceptable for a public demo API but would be considered a security issue in a production environment, where password fields should never be returned in API responses.
 
+### POST Validation Behavior
+
+Exploratory testing of the `/products/add` and `/users/add` endpoints revealed that both endpoints perform JSON syntax validation but very limited business validation.
+
+Both endpoints:
+
+- accept empty request bodies;
+- accept partial payloads;
+- accept incorrect field types;
+- return `400 Bad Request` only when the request contains malformed JSON.
+
+An additional behavioral difference was identified:
+
+- `/products/add` returns a **partial response**, containing only the fields provided in the request (plus the generated `id`).
+- `/users/add` returns a **complete user object**, populating unspecified fields with empty strings or `null` values.
+
+These behaviors appear to be implementation-specific characteristics of the DummyJSON API rather than expected production-grade validation rules.
+
+Raw request methods are used exclusively for negative testing scenarios where malformed JSON must be sent intentionally, bypassing client serialization.
+
 ### GET /products
 
 DummyJSON wraps the list response in a pagination envelope:
@@ -207,12 +231,6 @@ DummyJSON wraps the list response in a pagination envelope:
 ```
 
 The `products` key must be accessed explicitly — the response is not a direct array.
-
-### POST /products/add
-
-Returns `201 Created` with the full created object, including the fields sent in the request body.
-
-The API does not enforce required fields — requests with an empty body return `201 Created`. No business validation is implemented.
 
 ### PUT /products/{id}
 
