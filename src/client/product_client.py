@@ -10,10 +10,13 @@ class ProductClient(BaseClient):
     def get_product(self, product_id: int):
         return self.get(f"/products/{product_id}")
 
-    def create_product(self, product: ProductRequestModel):
+    def create_product(self, payload: ProductRequestModel | dict):
+        if isinstance(payload, ProductRequestModel):
+            payload = payload.model_dump()
+
         return self.post(
             "/products/add",
-            json=product.model_dump(),
+            json=self._serialize_payload(payload)
         )
 
     def update_product(self, product_id: int, product: ProductRequestModel):

@@ -13,8 +13,11 @@ class UserClient(BaseClient):
     def search_users(self, query: str):
         return self.get("/users/search", params={"q": query})
 
-    def create_user(self, user: UserRequestModel):
+    def create_user(self, payload: UserRequestModel | dict):
+        if isinstance(payload, UserRequestModel):
+            payload = payload.model_dump()
+
         return self.post(
             "/users/add",
-            json=user.model_dump(),
+            json=self._serialize_payload(payload)
         )
