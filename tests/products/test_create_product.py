@@ -24,3 +24,6 @@ def test_create_product(products_client):
     assert created.price == product.price
     assert created.description == product.description
     assert created.category == product.category
+
+
+

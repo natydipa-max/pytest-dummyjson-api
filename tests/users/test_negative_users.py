@@ -20,3 +20,18 @@ def test_get_user_with_invalid_id(users_client, user_id, expected_status):
     )
 
     assert str(user_id) in error.message
+
+def test_create_user_with_malformed_json_returns_400(users_client):
+    raw_payload = '{"firstName":}' # intentionally invalid JSON
+
+    response = users_client.post_raw_json(
+        "/users/add",
+        raw_payload
+    )
+    assert response.status_code == 400
+
+    error = ErrorResponseModel.model_validate(
+        response.json()
+    )
+
+    assert "Unexpected token" in error.message

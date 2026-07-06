@@ -23,6 +23,22 @@ def test_get_product_with_invalid_id(products_client, product_id, expected_statu
 
     assert str(product_id) in error.message
 
+def test_create_product_with_malformed_json_returns_400(products_client):
+    raw_payload = '{"title":}'  # intentionally invalid JSON
+
+    response = products_client.post_raw_json(
+        "/products/add",
+        raw_payload
+    )
+
+    assert response.status_code == 400
+
+    error = ErrorResponseModel.model_validate(
+        response.json()
+    )
+
+    assert "Unexpected token" in error.message
+
 def test_update_product_with_nonexistent_id_returns_404(products_client):
     product = ProductRequestModel(
         title="Test",

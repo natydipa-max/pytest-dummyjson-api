@@ -22,3 +22,17 @@ def test_create_user(users_client):
     assert created.firstName == user.firstName
     assert created.lastName == user.lastName
     assert created.age == user.age
+
+def test_create_user_with_partial_payload(users_client):
+    payload = {
+        "firstName": ""
+    }
+
+    response = users_client.create_user(payload)
+
+    assert response.status_code == 201
+
+    body = response.json()
+
+    assert body["firstName"] == ""
+    assert body["age"] is None
