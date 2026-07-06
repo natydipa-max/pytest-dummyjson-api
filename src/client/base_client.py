@@ -1,6 +1,7 @@
 import requests
 
 from src.config import BASE_URL, DEFAULT_TIMEOUT
+from pydantic import BaseModel
 
 
 class BaseClient:
@@ -40,6 +41,13 @@ class BaseClient:
             **kwargs,
         )
 
+    @staticmethod
+    def _serialize_payload(payload: BaseModel | dict) -> dict:
+        if isinstance(payload, BaseModel):
+            return payload.model_dump()
+
+        return payload
+
     def send_raw(self, method: str, endpoint: str, raw_body: str, **kwargs):
         headers = {"Content-Type": "application/json"}
         headers.update(kwargs.pop("headers", {}))
@@ -51,4 +59,16 @@ class BaseClient:
             headers=headers,
             timeout=DEFAULT_TIMEOUT,
             **kwargs,
+        )
+
+    def post_raw_json(self, endpoint: str, raw_json: str):
+        """
+        Sends a request with a raw JSON string.
+        Used only for negative testing of malformed payloads.
+        """
+        return self.session.post(
+            f"{self.base_url}{endpoint}",
+            data=raw_json,
+            headers={"Content-Type": "application/json"},
+            timeout=DEFAULT_TIMEOUT,
         )
