@@ -1,3 +1,4 @@
+import pytest
 from src.constants import INVALID_CREDENTIALS_MESSAGE, REQUIRED_CREDENTIALS_MESSAGE
 from src.models.auth.login_response_model import LoginResponseModel
 from src.models.error_response_model import ErrorResponseModel
@@ -20,7 +21,7 @@ def test_login_with_valid_credentials(auth_client):
     assert len(login_response.accessToken) > 0
     assert login_response.username == AUTH_USERNAME
 
-
+@pytest.mark.negative
 def test_login_with_invalid_username(auth_client):
     response = auth_client.login(
         username="invalid_user",
@@ -34,6 +35,7 @@ def test_login_with_invalid_username(auth_client):
     assert error.message == INVALID_CREDENTIALS_MESSAGE
 
 
+@pytest.mark.negative
 def test_login_with_invalid_password(auth_client):
     response = auth_client.login(
         username=AUTH_USERNAME,
@@ -47,6 +49,7 @@ def test_login_with_invalid_password(auth_client):
     assert error.message == INVALID_CREDENTIALS_MESSAGE
 
 
+@pytest.mark.negative
 def test_login_with_empty_credentials(auth_client):
     response = auth_client.login(
         username="",

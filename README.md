@@ -305,3 +305,13 @@ pytest -m smoke --tb=short -v
 # Run a specific file
 pytest tests/products/test_negative_products.py -v
 ```
+
+### Test markers
+
+- `negative`: Tests that verify the API correctly handles invalid input, malformed requests, and expected error responses.
+
+Example:
+
+```bash
+pytest -m negative
+```

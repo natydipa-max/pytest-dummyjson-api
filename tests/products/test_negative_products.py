@@ -3,6 +3,7 @@ from src.models.error_response_model import ErrorResponseModel
 from src.models.products.product_request_model import ProductRequestModel
 import pytest
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "product_id, expected_status",
     [
@@ -23,6 +24,7 @@ def test_get_product_with_invalid_id(products_client, product_id, expected_statu
 
     assert str(product_id) in error.message
 
+@pytest.mark.negative
 def test_create_product_with_malformed_json_returns_400(products_client):
     raw_payload = '{"title":}'  # intentionally invalid JSON
 
@@ -39,6 +41,7 @@ def test_create_product_with_malformed_json_returns_400(products_client):
 
     assert "Unexpected token" in error.message
 
+@pytest.mark.negative
 def test_update_product_with_nonexistent_id_returns_404(products_client):
     product = ProductRequestModel(
         title="Test",
@@ -56,6 +59,7 @@ def test_update_product_with_nonexistent_id_returns_404(products_client):
     assert "99999" in error.message
 
 
+@pytest.mark.negative
 def test_delete_product_with_nonexistent_id_returns_404(products_client):
     response = products_client.delete_product(99999)
 

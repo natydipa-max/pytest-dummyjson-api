@@ -1,6 +1,7 @@
 import pytest
 from src.models.error_response_model import ErrorResponseModel
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "user_id, expected_status",
     [
@@ -21,6 +22,7 @@ def test_get_user_with_invalid_id(users_client, user_id, expected_status):
 
     assert str(user_id) in error.message
 
+@pytest.mark.negative
 def test_create_user_with_malformed_json_returns_400(users_client):
     raw_payload = '{"firstName":}' # intentionally invalid JSON
 

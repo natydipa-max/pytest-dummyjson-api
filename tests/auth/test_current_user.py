@@ -1,3 +1,4 @@
+import pytest
 from src.config import AUTH_USERNAME
 from src.constants import INVALID_TOKEN_MESSAGE
 from src.models.users.current_user_model import CurrentUserModel
@@ -15,6 +16,7 @@ def test_get_current_user(auth_client, auth_token):
     assert user.username == AUTH_USERNAME
 
 
+@pytest.mark.negative
 def test_get_current_user_with_invalid_token(auth_client):
     response = auth_client.get_current_user("invalid_token")
 
