@@ -86,43 +86,29 @@ The fixture performs login once per test session and provides a valid access tok
 
 ### Authentication
 
-| Method | Endpoint | Test | Type |
-|----------|----------|----------|----------|
-| POST | /auth/login | test_login_with_valid_credentials | smoke |
-| POST | /auth/login | test_login_with_invalid_username | negative |
-| POST | /auth/login | test_login_with_invalid_password | negative |
-| POST | /auth/login | test_login_with_empty_credentials | negative |
-| GET | /auth/me | test_get_current_user | smoke |
-| GET | /auth/me | test_get_current_user_with_invalid_token | negative |
+| Method | Endpoint | Covered Scenarios |
+|--------|----------|-------------------|
+| POST | `/auth/login` | Valid credentials, invalid username, invalid password, missing credentials |
+| GET | `/auth/me` | Valid token, invalid/expired token |
 
-### Products Endpoint
+### Products
 
-| Method | Endpoint | Test | Type     |
-|--------|----------|------|----------|
-| GET | /products | test_get_all_products | smoke    |
-| GET | /products/{id} | test_get_product_by_id | smoke    |
-| GET | /products/{id} | test_get_product_with_invalid_id | negative |
-| POST | /products/add | test_create_product | smoke    |
-| POST | /products/add | test_create_product_with_malformed_json_returns_400 | negative |
-| PUT | /products/{id} | test_update_product | smoke    |
-| PUT | /products/{id} | test_update_product_with_nonexistent_id_returns_404 | negative |
-| DELETE | /products/{id} | test_delete_product | smoke    |
-| DELETE | /products/{id} | test_delete_product_with_nonexistent_id_returns_404 | negative |
+| Method | Endpoint | Covered Scenarios |
+|--------|----------|-------------------|
+| GET | `/products` | Retrieve all products, response schema validation |
+| GET | `/products/{id}` | Valid ID, invalid ID format, nonexistent ID |
+| POST | `/products/add` | Valid creation, malformed JSON |
+| PUT | `/products/{id}` | Successful update, nonexistent ID |
+| DELETE | `/products/{id}` | Successful deletion, nonexistent ID |
 
+### Users
 
-### Users Endpoint
-
-| Method | Endpoint      | Test | Type     |
-|--------|---------------|------|----------|
-| GET    | /users        | test_get_all_users | smoke    |
-| GET    | /users/{id}   | test_get_user_by_id | smoke    |
-| GET    | /users/{id}   | test_get_user_with_invalid_id | negative |
-| POST   | /users/add    | test_create_user | smoke    |
-| POST   | /users/add    | test_create_user | smoke    |
-| POST   | /users/add    | test_create_user_with_malformed_json_returns_400 | negative |
-| GET    | /users/search | test_search_users | smoke    |
-| GET    | /users/search | test_search_users_positive | positive |
-| GET    | /users/search | test_search_users_returns_empty_list_when_no_matches | negative |
+| Method | Endpoint | Covered Scenarios |
+|--------|----------|-------------------|
+| GET | `/users` | Retrieve all users, response schema validation |
+| GET | `/users/{id}` | Valid ID, invalid ID format, nonexistent ID |
+| GET | `/users/search` | Successful search, partial matching, empty results |
+| POST | `/users/add` | Valid creation, malformed JSON |
 
 ---
 
