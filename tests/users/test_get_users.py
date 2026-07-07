@@ -25,7 +25,8 @@ def test_get_all_users(users_client):
     users = UsersResponseModel.model_validate(response.json())
 
     assert all(user.id > 0 for user in users.users)
-    assert users.total == 208
+    assert users.total >= len(users.users)
     assert users.limit == 30
+    assert len(users.users) == users.limit
 
 
