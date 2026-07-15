@@ -3,6 +3,7 @@ import pytest
 from src.client.auth_client import AuthClient
 from src.client.product_client import ProductClient
 from src.client.user_client import UserClient
+from src.client.cart_client import CartClient
 from src.config import AUTH_USERNAME, AUTH_PASSWORD
 
 
@@ -24,3 +25,7 @@ def auth_token(auth_client):
 @pytest.fixture(scope="session")
 def users_client():
     return UserClient()
+
+@pytest.fixture(scope="session")
+def carts_client():
+    return CartClient()

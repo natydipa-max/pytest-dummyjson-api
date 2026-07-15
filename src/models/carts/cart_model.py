@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from src.models.products.product_model import ProductModel
+from src.models.carts.cart_product_model import CartProductModel
 
 
 class CartModel(BaseModel):
     id: int
-    products: list[ProductModel]
+    products: list[CartProductModel]
     total: float
     discountedTotal: float
     userId: int

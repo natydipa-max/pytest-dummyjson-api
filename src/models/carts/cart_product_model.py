@@ -8,5 +8,5 @@ class CartProductModel(BaseModel):
     quantity: int
     total: float
     discountPercentage: float
-    discountedPrice: float
+    discountedTotal: float
     thumbnail: str

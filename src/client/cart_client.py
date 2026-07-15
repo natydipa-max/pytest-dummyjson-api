@@ -9,3 +9,6 @@ class CartClient(BaseClient):
     def get_cart(self, cart_id: int):
         return self.get(f"/carts/{cart_id}")
 
+    def get_cart_by_user(self, user_id: int):
+        return self.get(f"/carts/user/{user_id}")
+
