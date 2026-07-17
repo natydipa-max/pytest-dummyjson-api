@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from src.models.carts.cart_product_model import CartProductModel
-
+#cart obtains in gets
 
 class CartModel(BaseModel):
     id: int

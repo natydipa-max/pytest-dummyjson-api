@@ -1,12 +1,12 @@
 from pydantic import BaseModel
-# product in a cart obtains with the get
+#product obtains after create it
 
-class CartProductModel(BaseModel):
+class CreatedCartProductModel(BaseModel):
     id: int
     title: str
     price: float
     quantity: int
     total: float
-    discountedTotal: float
+    discountedPrice: float
     discountPercentage: float
     thumbnail: str
