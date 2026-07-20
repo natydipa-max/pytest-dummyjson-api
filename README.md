@@ -6,7 +6,7 @@
 
 API test automation framework built with Python and Pytest, targeting the [DummyJSON](https://dummyjson.com) public API.
 
-The framework covers authentication workflows, CRUD operations for the `/products` endpoint, and retrieval and search operations for the `/users` endpoint, using Pydantic for response schema validation and GitHub Actions for continuous integration.
+The framework covers authentication workflows, CRUD operations for the `/products` endpoint, retrieval and search operations for the `/users` endpoint, and retrieval and creation workflows for the `/carts` endpoint, using Pydantic for request/response schema validation and GitHub Actions for continuous integration.
 
 ---
 
@@ -33,6 +33,7 @@ pytest-dummyjson-api/
 │   │   ├── base_client.py       # HTTP session, shared methods
 │   │   ├── product_client.py    # Products endpoint abstraction
 │   │   ├── user_client.py       # Users endpoint abstraction
+│   │   ├── cart_client.py       # Carts endpoint abstraction
 │   │   └── auth_client.py       # Authentication endpoint client
 │   └── models/
 │       ├── products/
@@ -47,6 +48,15 @@ pytest-dummyjson-api/
 │       │       ├── user_create_response_model.py     # POST response schema
 │       │       ├── user_request_model.py             # POST/PUT request body
 │       │       └── current_user_model.py             # Authenticated user schema
+│       ├── carts/
+│       │       ├── cart_model.py                     # GET response schema
+│       │       ├── carts_response_model.py           # GET list response schema
+│       │       ├── cart_product_model.py             # Nested product schema for GET responses
+│       │       ├── cart_item_request_model.py        # Nested product request schema
+│       │       ├── create_cart_request_model.py      # POST request body
+│       │       ├── create_cart_request_model.py      # POST request body
+│       │       ├── created_cart_model.py             # POST response schema
+│       │       └── created_cart_product_model.py     # Nested product schema for POST responses
 │       ├── auth/
 │       │       └── login_response_model.py           # Login response schema
 │       └── error_response_model.py           # 4xx error response schema
@@ -62,6 +72,10 @@ pytest-dummyjson-api/
 │   │   ├── test_negative_users.py
 │   │   ├── test_search_users.py
 │   │   └── test_create_user.py
+│   ├── carts/
+│   │   ├── test_get_carts.py
+│   │   ├── test_create_carts.py
+│   │   └── test_negative_carts.py
 │   └── auth/
 │       ├── test_auth.py
 │       └── test_current_user.py
@@ -110,6 +124,14 @@ The fixture performs login once per test session and provides a valid access tok
 | GET | `/users/search` | Successful search, partial matching, empty results |
 | POST | `/users/add` | Valid creation, malformed JSON |
 
+### Carts
+
+| Method | Endpoint | Covered Scenarios |
+|--------|----------|-------------------|
+| GET | `/carts` | Retrieve all carts, pagination (`limit`/`skip`), boundary values |
+| GET | `/carts/{id}` | Valid ID, invalid ID format, nonexistent ID |
+| GET | `/carts/user/{id}` | Valid user, nonexistent user |
+| POST | `/carts/add` | Valid creation, multiple products, single product, invalid product, malformed JSON, missing userId, empty products, nonexistent user |
 ---
 
 ## Validation Strategy
@@ -120,7 +142,7 @@ All tests follow a consistent three-step approach:
 2. **Schema** — validate the response body using Pydantic models
 3. **Business rules** — assert endpoint-specific behavior
 
-Response contracts are validated using dedicated Pydantic models organized by domain (`auth`, `products`, and `users`). Each model represents a specific API resource, request payload, or response type.
+Response contracts are validated using dedicated Pydantic models organized by domain (`auth`, `products`, `users`, and `carts`).
 
 - `ProductModel` — individual product returned by GET endpoints
 - `ProductsResponseModel` — paginated response returned by `GET /products`
@@ -134,6 +156,10 @@ Response contracts are validated using dedicated Pydantic models organized by do
 - `LoginResponseModel` — response returned by `POST /auth/login`
 - `CurrentUserModel` — authenticated user returned by `GET /auth/me`
 - `ErrorResponseModel` — error response returned by 4xx endpoints
+- `CartModel` — individual cart returned by GET endpoints
+- `CartsResponseModel` — paginated response returned by `GET /carts`
+- `CreateCartRequestModel` — request payload used by `POST /carts/add`
+- `CreatedCartModel` — response returned by `POST /carts/add`
 
 ---
 
@@ -285,6 +311,18 @@ curl "https://dummyjson.com/users/search?q=Morgan"
 > **Note:** These behaviors were verified through exploratory testing and reflect the current implementation of the DummyJSON API.
 
 ---
+
+### GET /carts
+
+Pagination behaves consistently with the Users endpoint.
+
+Observed behavior:
+
+- `limit=0` returns all available carts.
+- `limit` greater than the total returns all available carts.
+- `skip` beyond the available data returns an empty list with HTTP 200.
+
+These behaviors were validated and covered by automated tests.
 
 ## Running the Tests
 

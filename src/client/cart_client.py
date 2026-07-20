@@ -3,8 +3,15 @@ from src.models.carts.create_cart_request_model import CreateCartRequestModel
 
 class CartClient(BaseClient):
 
-    def get_all_carts(self):
-        return self.get("/carts")
+    def get_all_carts(self, limit: int | None = None, skip: int | None = None):
+        params = {
+            "limit": limit,
+            "skip": skip,
+        }
+
+        params = {k: v for k, v in params.items() if v is not None}
+
+        return self.get("/carts", params=params)
 
     def get_cart(self, cart_id: int):
         return self.get(f"/carts/{cart_id}")

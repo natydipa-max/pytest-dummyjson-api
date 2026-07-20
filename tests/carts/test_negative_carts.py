@@ -108,3 +108,4 @@ def test_add_cart_non_existing_user(carts_client):
     body = response.json()
 
     assert body["message"] == "User with id '999999' not found"
+
