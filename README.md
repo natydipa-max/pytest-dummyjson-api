@@ -54,7 +54,6 @@ pytest-dummyjson-api/
 │       │       ├── cart_product_model.py             # Nested product schema for GET responses
 │       │       ├── cart_item_request_model.py        # Nested product request schema
 │       │       ├── create_cart_request_model.py      # POST request body
-│       │       ├── create_cart_request_model.py      # POST request body
 │       │       ├── created_cart_model.py             # POST response schema
 │       │       └── created_cart_product_model.py     # Nested product schema for POST responses
 │       ├── auth/

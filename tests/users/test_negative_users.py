@@ -1,5 +1,6 @@
 import pytest
 from src.models.error_response_model import ErrorResponseModel
+from src.models.users.user_update_request_model import UserUpdateRequestModel
 
 @pytest.mark.negative
 @pytest.mark.parametrize(
@@ -37,3 +38,25 @@ def test_create_user_with_malformed_json_returns_400(users_client):
     )
 
     assert "Unexpected token" in error.message
+
+@pytest.mark.negative
+def test_update_non_existent_user(users_client):
+    payload = UserUpdateRequestModel(
+        lastName="Updated"
+    )
+
+    response = users_client.update_user(99999, payload)
+
+    assert response.status_code == 404
+    assert response.json()["message"] == "User with id '99999' not found"
+
+@pytest.mark.negative
+def test_update_user_with_invalid_id(users_client):
+    payload = UserUpdateRequestModel(
+        lastName="Updated"
+    )
+
+    response = users_client.update_user("abc", payload)
+
+    assert response.status_code == 400
+    assert response.json()["message"] == "Invalid user id 'abc'"

@@ -1,5 +1,6 @@
 from src.client.base_client import BaseClient
 from src.models.users.user_request_model import UserRequestModel
+from src.models.users.user_update_request_model import UserUpdateRequestModel
 
 
 class UserClient(BaseClient):
@@ -20,4 +21,10 @@ class UserClient(BaseClient):
         return self.post(
             "/users/add",
             json=self._serialize_payload(payload)
+        )
+
+    def update_user(self, user_id: int | str, user: UserUpdateRequestModel):
+        return self.put(
+            f"/users/{user_id}",
+            json=user.model_dump(exclude_none=True),
         )
