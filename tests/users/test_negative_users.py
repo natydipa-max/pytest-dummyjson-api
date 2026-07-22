@@ -60,3 +60,18 @@ def test_update_user_with_invalid_id(users_client):
 
     assert response.status_code == 400
     assert response.json()["message"] == "Invalid user id 'abc'"
+
+@pytest.mark.negative
+def test_delete_non_existent_user(users_client):
+    response = users_client.delete_user(99999)
+
+    assert response.status_code == 404
+    assert response.json()["message"] == "User with id '99999' not found"
+
+
+@pytest.mark.negative
+def test_delete_user_with_invalid_id(users_client):
+    response = users_client.delete_user("abc")
+
+    assert response.status_code == 400
+    assert response.json()["message"] == "Invalid user id 'abc'"

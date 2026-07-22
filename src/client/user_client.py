@@ -28,3 +28,8 @@ class UserClient(BaseClient):
             f"/users/{user_id}",
             json=user.model_dump(exclude_none=True),
         )
+
+    def delete_user(self, user_id: int | str):
+        return self.delete(
+            f"/users/{user_id}",
+        )
