@@ -5,8 +5,15 @@ from src.models.users.user_update_request_model import UserUpdateRequestModel
 
 class UserClient(BaseClient):
 
-    def get_all_users(self):
-        return self.get("/users")
+    def get_all_users(self, limit: int | None = None, skip: int | None = None):
+        params = {
+            "limit": limit,
+            "skip": skip,
+        }
+
+        params = {k: v for k, v in params.items() if v is not None}
+
+        return self.get("/users", params=params)
 
     def get_user(self, user_id: int):
         return self.get(f"/users/{user_id}")

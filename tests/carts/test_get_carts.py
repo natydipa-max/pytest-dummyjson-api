@@ -57,7 +57,7 @@ def test_get_carts_pagination(carts_client, limit, skip, expected_first_id):
     assert len(carts.carts) == limit
     assert carts.carts[0].id == expected_first_id
 
-@pytest.mark.negative
+@pytest.mark.boundary
 def test_get_carts_limit_zero_returns_all(carts_client):
     response = carts_client.get_all_carts(limit=0)
 
@@ -68,7 +68,7 @@ def test_get_carts_limit_zero_returns_all(carts_client):
     assert carts.limit == carts.total
     assert len(carts.carts) == carts.total
 
-@pytest.mark.negative
+@pytest.mark.boundary
 def test_get_carts_large_limit_returns_all(carts_client):
     response = carts_client.get_all_carts(limit=9999)
 
@@ -79,7 +79,7 @@ def test_get_carts_large_limit_returns_all(carts_client):
     assert carts.limit == carts.total
     assert len(carts.carts) == carts.total
 
-@pytest.mark.negative
+@pytest.mark.boundary
 def test_get_carts_skip_out_of_range(carts_client):
     response = carts_client.get_all_carts(skip=9999)
 
