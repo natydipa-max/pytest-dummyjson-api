@@ -40,3 +40,17 @@ class UserClient(BaseClient):
         return self.delete(
             f"/users/{user_id}",
         )
+
+    def filter_users(self, key=None, value=None):
+        params = {}
+
+        if key is not None:
+            params["key"] = key
+
+        if value is not None:
+            params["value"] = value
+
+        return self.get(
+            "/users/filter",
+            params=params
+        )

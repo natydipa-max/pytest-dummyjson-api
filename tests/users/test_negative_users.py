@@ -1,6 +1,7 @@
 import pytest
 from src.models.error_response_model import ErrorResponseModel
 from src.models.users.user_update_request_model import UserUpdateRequestModel
+from src.models.users.users_response_model import UsersResponseModel
 
 @pytest.mark.negative
 @pytest.mark.parametrize(
@@ -75,3 +76,18 @@ def test_delete_user_with_invalid_id(users_client):
 
     assert response.status_code == 400
     assert response.json()["message"] == "Invalid user id 'abc'"
+
+@pytest.mark.negative
+def test_filter_users_with_no_matching_results(users_client):
+    response = users_client.filter_users(
+        key="hair.color",
+        value="Purple123"
+    )
+
+    assert response.status_code == 200
+
+    users = UsersResponseModel.model_validate(response.json())
+
+    assert users.total == 0
+    assert users.users == []
+
