@@ -5,10 +5,20 @@ from src.models.users.user_update_request_model import UserUpdateRequestModel
 
 class UserClient(BaseClient):
 
-    def get_all_users(self, limit: int | None = None, skip: int | None = None):
+    def get_all_users(
+            self,
+            limit: int | None = None,
+            skip: int | None = None,
+            sortBy: str | None = None,
+            order: str | None = None,
+            select: str | None = None,
+    ):
         params = {
             "limit": limit,
             "skip": skip,
+            "sortBy": sortBy,
+            "order": order,
+            "select": select,
         }
 
         params = {k: v for k, v in params.items() if v is not None}
