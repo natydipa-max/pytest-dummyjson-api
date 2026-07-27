@@ -64,3 +64,12 @@ class UserClient(BaseClient):
             "/users/filter",
             params=params
         )
+
+    def get_user_carts(self, user_id: int):
+        return self.get(f"/users/{user_id}/carts")
+
+    def get_user_posts(self, user_id: int):
+        return self.get(f"/users/{user_id}/posts")
+
+    def get_user_todos(self, user_id: int):
+        return self.get(f"/users/{user_id}/todos")
