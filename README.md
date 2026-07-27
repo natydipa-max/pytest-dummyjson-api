@@ -6,7 +6,7 @@
 
 API test automation framework built with Python and Pytest, targeting the [DummyJSON](https://dummyjson.com) public API.
 
-The framework covers authentication workflows, CRUD operations for the `/products` endpoint, retrieval and search operations for the `/users` endpoint, and retrieval and creation workflows for the `/carts` endpoint, using Pydantic for request/response schema validation and GitHub Actions for continuous integration.
+The framework covers authentication workflows, CRUD operations for the `/products` endpoint, and comprehensive test scenarios for the `/users` endpoint, including retrieval, pagination, search, filtering, sorting, field selection, and related resources.
 
 ---
 
@@ -56,6 +56,12 @@ pytest-dummyjson-api/
 │       │       ├── create_cart_request_model.py      # POST request body
 │       │       ├── created_cart_model.py             # POST response schema
 │       │       └── created_cart_product_model.py     # Nested product schema for POST responses
+│       ├── posts/
+│       │       ├── post_model.py                     # Individual post schema
+│       │       └── posts_response_model.py           # GET list response schema
+│       ├── todos/
+│       │       ├── todo_model.py                     # Individual todo schema
+│       │       └── todos_response_model.py           # GET list response schema
 │       ├── auth/
 │       │       └── login_response_model.py           # Login response schema
 │       └── error_response_model.py           # 4xx error response schema
@@ -68,9 +74,15 @@ pytest-dummyjson-api/
 │   │   └── test_negative_products.py
 │   ├── users/
 │   │   ├── test_get_users.py
-│   │   ├── test_negative_users.py
+│   │   ├── test_sort_users.py
 │   │   ├── test_search_users.py
-│   │   └── test_create_user.py
+│   │   ├── test_filter_user.py
+│   │   ├── test_create_user.py
+│   │   ├── test_update_user.py
+│   │   ├── test_get_user_carts.py
+│   │   ├── test_get_user_posts.py
+│   │   ├── test_get_user_todos.py
+│   │   └── test_negative_users.py
 │   ├── carts/
 │   │   ├── test_get_carts.py
 │   │   ├── test_create_carts.py
@@ -116,12 +128,18 @@ The fixture performs login once per test session and provides a valid access tok
 
 ### Users
 
-| Method | Endpoint | Covered Scenarios |
-|--------|----------|-------------------|
-| GET | `/users` | Retrieve all users, response schema validation |
-| GET | `/users/{id}` | Valid ID, invalid ID format, nonexistent ID |
-| GET | `/users/search` | Successful search, partial matching, empty results |
-| POST | `/users/add` | Valid creation, malformed JSON |
+| Method | Endpoint          | Covered Scenarios                                                  |
+| ------ | ----------------- | ------------------------------------------------------------------ |
+| GET    | /users            | Retrieval, pagination, boundary values, sorting, field selection   |
+| GET    | /users/{id}       | Valid ID, invalid ID, nonexistent ID                               |
+| GET    | /users/search     | Search, partial matching, empty query, empty results               |
+| GET    | /users/filter     | Supported fields, nested fields, empty results, invalid parameters |
+| GET    | /users/{id}/carts | Valid user, nonexistent user                                       |
+| GET    | /users/{id}/posts | Valid user, nonexistent user, response schema validation           |
+| GET    | /users/{id}/todos | Valid user, nonexistent user, response schema validation           |
+| POST   | /users/add        | Valid creation, malformed JSON                                     |
+| PUT    | /users/{id}       | Successful update, partial update, nonexistent ID                  |
+
 
 ### Carts
 
@@ -141,7 +159,7 @@ All tests follow a consistent three-step approach:
 2. **Schema** — validate the response body using Pydantic models
 3. **Business rules** — assert endpoint-specific behavior
 
-Response contracts are validated using dedicated Pydantic models organized by domain (`auth`, `products`, `users`, and `carts`).
+Response contracts are validated using dedicated Pydantic models organized by domain (`auth`, `products`, `users`, `carts`, `posts`, and `todos`).
 
 - `ProductModel` — individual product returned by GET endpoints
 - `ProductsResponseModel` — paginated response returned by `GET /products`
@@ -150,7 +168,7 @@ Response contracts are validated using dedicated Pydantic models organized by do
 - `ProductDeleteResponseModel` — response returned by `DELETE /products/{id}`, including `isDeleted` and `deletedOn`
 - `UserModel` — individual user returned by GET endpoints
 - `UsersResponseModel` — paginated response returned by `GET /users` and `GET /users/search`
-- `UserRequestModel` — request payload used by `POST /users/add`
+- `UserRequestModel` — request payload used by `POST /users/add` and `PUT /users/{id}`
 - `UserCreateResponseModel` — response returned by `POST /users/add`
 - `LoginResponseModel` — response returned by `POST /auth/login`
 - `CurrentUserModel` — authenticated user returned by `GET /auth/me`
@@ -159,6 +177,24 @@ Response contracts are validated using dedicated Pydantic models organized by do
 - `CartsResponseModel` — paginated response returned by `GET /carts`
 - `CreateCartRequestModel` — request payload used by `POST /carts/add`
 - `CreatedCartModel` — response returned by `POST /carts/add`
+- `PostModel` — individual post returned by GET endpoints
+- `PostsResponseModel` — paginated response returned by `GET /posts`
+- `TodoModel` — individual todo item returned by GET endpoints
+- `TodosResponseModel` — paginated response returned by `GET /todos`
+
+---
+
+## Test Summary
+
+The framework currently covers:
+
+- Authentication workflows
+- Product CRUD operations
+- User retrieval and related resources
+- Cart retrieval and creation workflows
+- Response schema validation using Pydantic
+- Negative testing scenarios
+- Exploratory API behavior validation
 
 ---
 
@@ -307,8 +343,76 @@ curl "https://dummyjson.com/users/search?q=@dummyjson.com"
 curl "https://dummyjson.com/users/search?q=Morgan"
 ```
 
-> **Note:** These behaviors were verified through exploratory testing and reflect the current implementation of the DummyJSON API.
+---
 
+### Pagination behavior
+
+The endpoint supports pagination through the `limit` and `skip` query parameters.
+
+Observed behaviors:
+
+- `limit=0` returns all users.
+- A `limit` value greater than the total number of users returns all available users.
+- A `skip` value beyond the total number of users returns an empty `users` array.
+
+Examples:
+
+```bash
+# Returns all users
+curl "https://dummyjson.com/users?limit=0"
+
+# Returns all remaining users when limit exceeds total
+curl "https://dummyjson.com/users?limit=1000"
+
+# Returns an empty list when skip is beyond total
+curl "https://dummyjson.com/users?skip=1000"
+```
+
+---
+
+### Sorting
+
+The endpoint supports sorting results using the `sortBy` and `order` query parameters.
+
+Supported order values:
+
+- `order=asc` — ascending order
+- `order=desc` — descending order
+
+Example:
+
+```bash
+curl "https://dummyjson.com/users?sortBy=firstName&order=asc"
+```
+---
+
+### Field selection
+
+The endpoint supports selecting specific fields through the `select` query parameter.
+
+Example:
+
+```bash
+curl "https://dummyjson.com/users?select=firstName,age"
+```
+
+#### Observed behavior
+
+The API always includes the `id` field in the response, even when it is not explicitly requested.
+
+Example response:
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "Emily",
+      "age": 28
+    }
+  ]
+}
+```
 ---
 
 ### GET /carts
@@ -322,6 +426,19 @@ Observed behavior:
 - `skip` beyond the available data returns an empty list with HTTP 200.
 
 These behaviors were validated and covered by automated tests.
+
+---
+
+### POST /carts/add
+
+Observed behavior:
+
+- Invalid product IDs are ignored and the cart is created without those products.
+- Empty product arrays are accepted.
+- Missing userId returns an error response.
+
+
+> **Note:** The behaviors documented in this section were verified through exploratory testing and reflect the current implementation of the DummyJSON API.
 
 ## Running the Tests
 
