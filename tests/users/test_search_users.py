@@ -51,3 +51,15 @@ def test_search_users_returns_empty_list_when_no_matches(users_client, query):
     assert users.total == 0
     assert users.limit == 0
     assert users.users == []
+
+@pytest.mark.boundary
+def test_search_users_with_empty_query_returns_paginated_results(users_client):
+    response = users_client.search_users("")
+
+    assert response.status_code == 200
+
+    users = UsersResponseModel.model_validate(response.json())
+
+    assert users.total > 0
+    assert len(users.users) > 0
+    assert users.limit == 30
