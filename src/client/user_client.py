@@ -51,14 +51,13 @@ class UserClient(BaseClient):
             f"/users/{user_id}",
         )
 
-    def filter_users(self, key=None, value=None):
-        params = {}
+    def filter_users(self, key: str | None = None, value: str | None = None):
+        params = {
+            "key": key,
+            "value": value,
+        }
 
-        if key is not None:
-            params["key"] = key
-
-        if value is not None:
-            params["value"] = value
+        params = {k: v for k, v in params.items() if v is not None}
 
         return self.get(
             "/users/filter",

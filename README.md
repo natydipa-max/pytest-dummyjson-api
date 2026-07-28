@@ -47,6 +47,7 @@ pytest-dummyjson-api/
 │       │       ├── user_response_model.py            # GET list response schema
 │       │       ├── user_create_response_model.py     # POST response schema
 │       │       ├── user_request_model.py             # POST/PUT request body
+│       │       ├── user_update_request_model.py      # PUT request body
 │       │       └── current_user_model.py             # Authenticated user schema
 │       ├── carts/
 │       │       ├── cart_model.py                     # GET response schema
@@ -76,8 +77,10 @@ pytest-dummyjson-api/
 │   │   ├── test_get_users.py
 │   │   ├── test_sort_users.py
 │   │   ├── test_search_users.py
+│   │   ├── test_select_user.py
 │   │   ├── test_filter_user.py
 │   │   ├── test_create_user.py
+│   │   ├── test_delete_user.py
 │   │   ├── test_update_user.py
 │   │   ├── test_get_user_carts.py
 │   │   ├── test_get_user_posts.py
@@ -128,17 +131,18 @@ The fixture performs login once per test session and provides a valid access tok
 
 ### Users
 
-| Method | Endpoint          | Covered Scenarios                                                  |
-| ------ | ----------------- | ------------------------------------------------------------------ |
-| GET    | /users            | Retrieval, pagination, boundary values, sorting, field selection   |
-| GET    | /users/{id}       | Valid ID, invalid ID, nonexistent ID                               |
-| GET    | /users/search     | Search, partial matching, empty query, empty results               |
-| GET    | /users/filter     | Supported fields, nested fields, empty results, invalid parameters |
-| GET    | /users/{id}/carts | Valid user, nonexistent user                                       |
-| GET    | /users/{id}/posts | Valid user, nonexistent user, response schema validation           |
-| GET    | /users/{id}/todos | Valid user, nonexistent user, response schema validation           |
-| POST   | /users/add        | Valid creation, malformed JSON                                     |
-| PUT    | /users/{id}       | Successful update, partial update, nonexistent ID                  |
+| Method | Endpoint          | Covered Scenarios                                                          |
+| ------ | ----------------- |----------------------------------------------------------------------------|
+| GET    | /users            | Retrieval, pagination, boundary values, sorting, field selection           |
+| GET    | /users/{id}       | Valid ID, invalid ID, nonexistent ID                                       |
+| GET    | /users/search     | Search, partial matching, empty query, empty results                       |
+| GET    | /users/filter     | Supported fields, nested fields, empty results, missing parameters         |
+| GET    | /users/{id}/carts | Valid user, invalid ID format, nonexistent user, response schema validation |
+| GET    | /users/{id}/posts | Valid user, invalid ID format, nonexistent user, response schema validation |
+| GET    | /users/{id}/todos | Valid user, invalid ID format, nonexistent user, response schema validation |
+| POST   | /users/add        | Valid creation, malformed JSON                                             |
+| PUT    | /users/{id}       | Successful update, partial update, invalid ID format, nonexistent ID       |
+| DELETE | /users/{id} | Successful deletion, nonexistent ID                                        |
 
 
 ### Carts
@@ -149,6 +153,17 @@ The fixture performs login once per test session and provides a valid access tok
 | GET | `/carts/{id}` | Valid ID, invalid ID format, nonexistent ID |
 | GET | `/carts/user/{id}` | Valid user, nonexistent user |
 | POST | `/carts/add` | Valid creation, multiple products, single product, invalid product, malformed JSON, missing userId, empty products, nonexistent user |
+
+---
+
+## Live Data Dependency
+
+This framework runs against the real `dummyjson.com` API, with no mocking or stubbing layer (see `docs/testing_strategy.md`). This is a deliberate design choice, not an oversight — but it has a direct consequence: some tests assert on specific seed data rather than just on response shape.
+
+The clearest example is `test_get_users_pagination` in `tests/users/test_get_users.py`, which asserts a fixed `expected_first_id` for a given `skip` value (e.g. `skip=10 → id=11`). This assumes the underlying `/users` dataset keeps a stable order and doesn't get reseeded or resized.
+
+If dummyjson ever reorders or resets its seed data, these tests will fail — that failure reflects a change in the external dataset, not a bug in this framework. When debugging a failure here, check whether the assumed dataset shape still holds before assuming a regression.
+
 ---
 
 ## Validation Strategy
@@ -302,6 +317,22 @@ Returns `204 No Content` with allowed methods only. No schema or field validatio
 
 Not all products include a `brand` field. The `ProductModel` defines it as optional (`brand: str | None = None`) to avoid schema validation failures on products without brand.
 
+### PUT /users/{id}
+
+Partial updates preserve unspecified fields.
+
+For example:
+
+```json
+{
+  "lastName": "Updated"
+}
+```
+
+updates only the `lastName` field while preserving all other existing user attributes.
+
+This behavior was verified through exploratory testing and is covered by automated tests.
+
 ### GET /users/search
 
 The endpoint supports searching through the `q` query parameter.
@@ -384,6 +415,22 @@ Example:
 ```bash
 curl "https://dummyjson.com/users?sortBy=firstName&order=asc"
 ```
+
+#### Observed behavior
+
+Exploratory testing showed that:
+
+- Valid `sortBy` fields are applied correctly.
+- Unknown `sortBy` values are ignored and the endpoint returns the default user list (`HTTP 200`).
+- `order` only accepts `asc` or `desc`.
+- Any other value returns `400 Bad Request` with the following message:
+
+```json
+{
+  "message": "Invalid 'order' - should be either 'asc' or 'desc'"
+}
+```
+
 ---
 
 ### Field selection
@@ -395,6 +442,14 @@ Example:
 ```bash
 curl "https://dummyjson.com/users?select=firstName,age"
 ```
+
+#### Observed behavior
+
+Exploratory testing showed that:
+
+- Requested valid fields are returned.
+- The `id` field is always included in the response.
+- Unknown fields are silently ignored.
 
 #### Observed behavior
 

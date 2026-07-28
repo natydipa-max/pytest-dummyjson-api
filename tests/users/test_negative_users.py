@@ -1,4 +1,5 @@
 import pytest
+from src.constants import INVALID_USER_ID_MESSAGE, USER_NOT_FOUND_MESSAGE
 from src.models.error_response_model import ErrorResponseModel
 from src.models.users.user_update_request_model import UserUpdateRequestModel
 from src.models.users.users_response_model import UsersResponseModel
@@ -49,7 +50,7 @@ def test_update_non_existent_user(users_client):
     response = users_client.update_user(99999, payload)
 
     assert response.status_code == 404
-    assert response.json()["message"] == "User with id '99999' not found"
+    assert response.json()["message"] == USER_NOT_FOUND_MESSAGE.format(99999)
 
 @pytest.mark.negative
 def test_update_user_with_invalid_id(users_client):
@@ -60,14 +61,14 @@ def test_update_user_with_invalid_id(users_client):
     response = users_client.update_user("abc", payload)
 
     assert response.status_code == 400
-    assert response.json()["message"] == "Invalid user id 'abc'"
+    assert response.json()["message"] == INVALID_USER_ID_MESSAGE.format("abc")
 
 @pytest.mark.negative
 def test_delete_non_existent_user(users_client):
     response = users_client.delete_user(99999)
 
     assert response.status_code == 404
-    assert response.json()["message"] == "User with id '99999' not found"
+    assert response.json()["message"] == USER_NOT_FOUND_MESSAGE.format(99999)
 
 
 @pytest.mark.negative
@@ -75,7 +76,7 @@ def test_delete_user_with_invalid_id(users_client):
     response = users_client.delete_user("abc")
 
     assert response.status_code == 400
-    assert response.json()["message"] == "Invalid user id 'abc'"
+    assert response.json()["message"] == INVALID_USER_ID_MESSAGE.format("abc")
 
 @pytest.mark.negative
 def test_filter_users_with_no_matching_results(users_client):

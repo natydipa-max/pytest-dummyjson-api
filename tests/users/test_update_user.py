@@ -5,20 +5,21 @@ from src.models.users.user_update_request_model import UserUpdateRequestModel
 
 @pytest.mark.smoke
 def test_update_user(users_client):
-    payload = UserUpdateRequestModel(
-        lastName="Updated"
+    original = users_client.get_user(1)
+    original_user = UserModel.model_validate(original.json())
+
+    response = users_client.update_user(
+        1,
+        UserUpdateRequestModel(lastName="Updated")
     )
 
-    response = users_client.update_user(1, payload)
-    print(response.status_code)
-    print(response.json())
+    updated = UserModel.model_validate(response.json())
 
-    assert response.status_code == 200
+    assert updated.lastName == "Updated"
 
-    user = UserModel(**response.json())
-
-    assert user.id == 1
-    assert user.lastName == "Updated"
+    assert updated.firstName == original_user.firstName
+    assert updated.age == original_user.age
+    assert updated.email == original_user.email
 
 
 def test_update_multiple_user_fields(users_client):

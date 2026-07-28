@@ -1,6 +1,8 @@
 import pytest
 
 from src.models.carts.carts_response_model import CartsResponseModel
+from src.models.error_response_model import ErrorResponseModel
+from src.constants import INVALID_USER_ID_MESSAGE, USER_NOT_FOUND_MESSAGE
 
 
 @pytest.mark.smoke
@@ -22,6 +24,21 @@ def test_get_user_carts_invalid_user_id(users_client):
 
     assert response.status_code == 404
 
-    assert response.json() == {
-        "message": "User with id '999999' not found"
-    }
+    # assert response.json() == {
+    #     "message": "User with id '999999' not found"
+    # }
+    error = ErrorResponseModel.model_validate(response.json())
+
+    assert error.message == USER_NOT_FOUND_MESSAGE.format("999999")
+
+
+
+@pytest.mark.negative
+def test_get_user_carts_with_invalid_user_id_returns_bad_request(users_client):
+    response = users_client.get_user_carts("abc")
+
+    assert response.status_code == 400
+
+    error = ErrorResponseModel.model_validate(response.json())
+
+    assert error.message == INVALID_USER_ID_MESSAGE.format("abc")
